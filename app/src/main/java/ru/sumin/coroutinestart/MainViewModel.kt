@@ -2,6 +2,7 @@ package ru.sumin.coroutinestart
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -13,7 +14,10 @@ import kotlin.concurrent.thread
 class MainViewModel : ViewModel() {
 
     private val parentJob = Job()
-    private val coroutineScope = CoroutineScope(Dispatchers.Main + parentJob)
+    private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
+        Log.d(LOG_TAG, throwable.toString())
+    }
+    private val coroutineScope = CoroutineScope(Dispatchers.Main + parentJob + exceptionHandler)
 
     fun method() {
         val childJob1 = coroutineScope.launch {
@@ -26,14 +30,16 @@ class MainViewModel : ViewModel() {
             Log.d(LOG_TAG, "second coroutine finished")
         }
 
-        thread {
-            Thread.sleep(1000)
-            parentJob.cancel()
-            Log.d(LOG_TAG, "Parent Job isActive: ${parentJob.isActive}")
-        }
 
-        Log.d(LOG_TAG, parentJob.children.contains(childJob1).toString())
-        Log.d(LOG_TAG, parentJob.children.contains(childJob2).toString())
+        val childJob3 = coroutineScope.launch {
+            delay(1000)
+            error()
+            Log.d(LOG_TAG, "second coroutine finished")
+        }
+    }
+
+    private fun error() {
+        throw RuntimeException()
     }
 
     override fun onCleared() {
