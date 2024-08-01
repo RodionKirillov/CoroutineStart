@@ -1,6 +1,9 @@
 package ru.sumin.coroutinestart
 
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.os.Message
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -9,6 +12,13 @@ import ru.sumin.coroutinestart.databinding.ActivityMainBinding
 import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
+
+    private val handler = object : Handler() {
+        override fun handleMessage(msg: Message) {
+            super.handleMessage(msg)
+            Log.d("HANDLE_MESSAGE", msg.toString())
+        }
+    }
 
     private val binding by lazy {
         ActivityMainBinding.inflate(layoutInflater)
@@ -20,6 +30,7 @@ class MainActivity : AppCompatActivity() {
         binding.buttonLoad.setOnClickListener {
             loadData()
         }
+        handler.sendMessage(Message.obtain(handler, 0, 17))
     }
 
     private fun loadData() {
@@ -38,19 +49,25 @@ class MainActivity : AppCompatActivity() {
     private fun loadCity(callback: (String) -> Unit) {
         thread {
             Thread.sleep(5000)
-            callback.invoke("Moscow")
+            Handler(Looper.getMainLooper()).post {
+                callback.invoke("Moscow")
+            }
         }
     }
 
     private fun loadTemperature(city: String, callback: (Int) -> Unit) {
         thread {
-            Toast.makeText(
-                this,
-                getString(R.string.loading_temperature_toast, city),
-                Toast.LENGTH_SHORT
-            ).show()
+            Handler(Looper.getMainLooper()).post {
+                Toast.makeText(
+                    this,
+                    getString(R.string.loading_temperature_toast, city),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
             Thread.sleep(5000)
-            callback.invoke(17)
+            Handler(Looper.getMainLooper()).post {
+                callback.invoke(17)
+            }
         }
     }
 }
