@@ -27,8 +27,8 @@ class MainActivity : AppCompatActivity() {
         binding.buttonLoad.isEnabled = false
         loadCity {
             binding.tvLocation.text = it
-            loadTemperature(it) {
-                binding.tvTemperature.text = it.toString()
+            loadTemperature(it) { temp ->
+                binding.tvTemperature.text = temp.toString()
                 binding.progress.isVisible = false
                 binding.buttonLoad.isEnabled = true
             }
